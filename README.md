@@ -1,4 +1,4 @@
-## Architecture - Over View
+## Over View
 There are two endpoints:
 `api: /upload`
 `api: /download/{fileID}`
