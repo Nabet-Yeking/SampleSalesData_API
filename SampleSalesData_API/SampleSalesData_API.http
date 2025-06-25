@@ -1,15 +1,21 @@
-@SampleSalesData_API_HostAddress = http://192.168.0.126:5088
+@SampleSalesData_API_HostAddress = http://localhost:5088
 
-POST {{SampleSalesData_API_HostAddress}}/upload/
-Content-Type: multipart/form-data
+POST {{SampleSalesData_API_HostAddress}}/v1/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name='file'; filename="test.csv";
+Content-Disposition: form-data; name="file"; filename="test.csv"
 Content-Type: text/csv
 
-<./test.csv>
-------WebKitFormBoundary7MA4YWxkTrZu0gW
+test1,2022-08-01,100
+test2,2022-08-01,400
+test3,2022-08-01,500
+test4,2022-08-01,600
+test5,2022-08-01,700
+test4,2022-08-01,600
+test5,2022-08-01,700
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###
-GET {{SampleSalesData_API_HostAddress}}/download/{fileID}
+GET {{SampleSalesData_API_HostAddress}}/v1/download/{fileID}
 Accept: application/file

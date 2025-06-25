@@ -8,32 +8,42 @@ namespace SampleSalesData_API.Controllers
     [ApiController]
     public class SalesController : ControllerBase
     {
-        [HttpPost("upload")]
-        public async Task<ActionResult> UploadSalesData(IFormFile file)
+        [HttpPost("/v1/upload")]
+        public async Task<ActionResult> UploadSalesData([FromForm] IFormFile file)
         {
-            if (file != null && file.ContentType == LiteralConstants.TEXT_CSV)
+            try
             {
-                Guid fileID = Guid.NewGuid();
-                var filePath = Path.Combine("Data", "TempSalesData", $"{fileID}.csv");
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await file.CopyToAsync(stream);
-
-                if (processSalesData(fileID, stream))
+                if (file != null && file.ContentType == LiteralConstants.TEXT_CSV && file.Length != 0)
                 {
+                    Guid fileID = Guid.NewGuid();
+                    var filePath = Path.Combine("Data", "TempSalesData", $"{fileID}.csv");
+                    using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                    await file.CopyToAsync(stream);
+                    stream.Close();
+
+                    if (processSalesData(fileID, filePath))
+                    {
+                        return Ok(new { downloadURL = $"/download/{fileID}" });
+                    }
+
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
                     }
-                    return Ok(new { downloadURL = $"download/{fileID}" });
                 }
+                return BadRequest(LiteralConstants.FILE_NOT_UPLOADED);
             }
-            return BadRequest(LiteralConstants.FILE_NOT_UPLOADED);
+            catch (Exception)
+            {
+                return BadRequest(LiteralConstants.FILE_NOT_UPLOADED);
+            }
         }
 
-        private bool processSalesData(Guid fileID, FileStream stream)
+        private bool processSalesData(Guid fileID, string filePath)
         {
             try
             {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 StreamReader streamReader = new StreamReader(stream);
                 Dictionary<string, string> salesData = new Dictionary<string, string>();
                 string? line, department, numberOfsales;
@@ -53,6 +63,11 @@ namespace SampleSalesData_API.Controllers
                     }
                 }
 
+                streamReader.Close();
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
                 return storeExtractedSalesData(fileID, salesData.ToArray());
             }
             catch (Exception)
@@ -61,17 +76,21 @@ namespace SampleSalesData_API.Controllers
             }
         }
 
-        private bool storeExtractedSalesData(Guid fileID, KeyValuePair<string, string>[] extractedSalesData) {
+        private bool storeExtractedSalesData(Guid fileID, KeyValuePair<string, string>[] extractedSalesData) 
+        {
             try
             {
                 var filePath = Path.Combine("Data", "SalesData", $"{fileID}.csv");
-                var fstream = new FileStream(filePath, FileMode.Create);
+                if (filePath == null) return false;
+
+                var fstream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
                 StreamWriter streamWriter = new StreamWriter(fstream);
 
                 for (int i = 0; i < extractedSalesData.Length; i++)
                 {
                     streamWriter.WriteLine($"{extractedSalesData[i].Key},{extractedSalesData[i].Value}");
                 }
+                streamWriter.Close();
                 return true;
             }
             catch (Exception)
@@ -80,8 +99,8 @@ namespace SampleSalesData_API.Controllers
             }
         }
 
-        [HttpGet("download/{Id}")]
-        public async Task<ActionResult> UploadSalesData(string Id)
+        [HttpGet("/v1/download/{Id}")]
+        public async Task<ActionResult> DownloadSalesData(string Id)
         {
             try
             {
@@ -89,7 +108,7 @@ namespace SampleSalesData_API.Controllers
                 var filePath = Path.Combine("Data", "SalesData", fileName);
                 var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
                 return File(fileBytes, LiteralConstants.TEXT_CSV, fileName);
-            } catch (FileNotFoundException) {
+            } catch (Exception) {
                 return BadRequest(LiteralConstants.FILE_NOT_FOUND);
             }
         }
