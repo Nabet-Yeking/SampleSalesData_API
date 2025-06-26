@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SampleSalesData_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/sales-data")]
     [ApiController]
     public class SalesController : ControllerBase
     {
-        [HttpPost("/v1/upload")]
+        [HttpPost("upload")]
         public async Task<ActionResult> UploadSalesData([FromForm] IFormFile file)
         {
             try
@@ -23,7 +23,7 @@ namespace SampleSalesData_API.Controllers
 
                     if (processSalesData(fileID, filePath))
                     {
-                        return Ok(new { downloadURL = $"/download/{fileID}" });
+                        return Ok(new { downloadURL = $"{RouteData}/download/{fileID}" });
                     }
 
                     if (System.IO.File.Exists(filePath))
@@ -99,7 +99,7 @@ namespace SampleSalesData_API.Controllers
             }
         }
 
-        [HttpGet("/v1/download/{Id}")]
+        [HttpGet("download/{Id}")]
         public async Task<ActionResult> DownloadSalesData(string Id)
         {
             try

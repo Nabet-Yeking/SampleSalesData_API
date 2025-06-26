@@ -1,6 +1,6 @@
 @SampleSalesData_API_HostAddress = http://localhost:5088
 
-POST {{SampleSalesData_API_HostAddress}}/v1/upload
+POST {{SampleSalesData_API_HostAddress}}/api/v1/sales-data/upload
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -17,5 +17,5 @@ test5,2022-08-01,700
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###
-GET {{SampleSalesData_API_HostAddress}}/v1/download/{fileID}
+GET {{SampleSalesData_API_HostAddress}}/api/v1/sales-data/download/test
 Accept: application/file
