@@ -23,7 +23,7 @@ namespace SampleSalesData_API.Controllers
 
                     if (processSalesData(fileID, filePath))
                     {
-                        return Ok(new { downloadURL = $"{RouteData}/download/{fileID}" });
+                        return Ok(new { downloadURL = $"api/v1/sales-data/download/{fileID}" });
                     }
 
                     if (System.IO.File.Exists(filePath))
